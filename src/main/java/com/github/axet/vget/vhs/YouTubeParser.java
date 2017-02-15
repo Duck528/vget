@@ -210,7 +210,7 @@ public class YouTubeParser extends VGetParser {
          * @return name of decode-function or null
          */
         public String getMainDecodeFunctionName(String playerJS) {
-            Pattern decodeFunctionName = Pattern.compile("\\.sig\\|\\|([a-zA-Z0-9$]+)\\(");
+            Pattern decodeFunctionName = Pattern.compile("\\.set\\(\"signature\",([\\w\\d\\$_]+)\\(.+\\)\\)");
             Matcher decodeFunctionNameMatch = decodeFunctionName.matcher(playerJS);
             if (decodeFunctionNameMatch.find()) {
                 return decodeFunctionNameMatch.group(1);
@@ -233,7 +233,7 @@ public class YouTubeParser extends VGetParser {
             Pattern decodeFunction = Pattern
                     // this will probably change from version to version so
                     // changes have to be done here
-                    .compile(String.format("(%s=function\\([a-zA-Z0-9$]+\\)\\{.*?\\})[,;]", functionName),
+                    .compile(String.format("(%s=function\\([a-zA-Z0-9$]+\\)\\{.*?\\})[,;]", Pattern.quote(functionName)),
                             Pattern.DOTALL);
             Matcher decodeFunctionMatch = decodeFunction.matcher(playerJS);
             if (decodeFunctionMatch.find()) {
@@ -250,7 +250,7 @@ public class YouTubeParser extends VGetParser {
                 final String decodeFuncHelperName = decodeFunctionHelperNameMatch.group(1);
 
                 Pattern decodeFunctionHelper = Pattern.compile(
-                        String.format("(var %s=\\{[a-zA-Z0-9]*:function\\(.*?\\};)", decodeFuncHelperName),
+                        String.format("(var %s=\\{[a-zA-Z0-9]*:function\\(.*?\\};)", Pattern.quote(decodeFuncHelperName)),
                         Pattern.DOTALL);
                 Matcher decodeFunctionHelperMatch = decodeFunctionHelper.matcher(playerJS);
                 if (decodeFunctionHelperMatch.find()) {
@@ -649,10 +649,10 @@ public class YouTubeParser extends VGetParser {
 
         // grab html5 player url
         {
-            Pattern playerURL = Pattern.compile("(//.*?/player-[\\w\\d\\-]+\\/.*\\.js)");
+            Pattern playerURL = Pattern.compile("src=\"([^\"]*player-[^\"]*\\/[^\"]*\\.js)\"");
             Matcher playerVersionMatch = playerURL.matcher(html);
             if (playerVersionMatch.find()) {
-                info.setPlayerURI(new URI("https:" + playerVersionMatch.group(1)));
+                info.setPlayerURI(new URI("https://www.youtube.com" + playerVersionMatch.group(1)));
             }
         }
 
